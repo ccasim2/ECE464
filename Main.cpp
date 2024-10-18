@@ -48,7 +48,6 @@ void gateData(string &line, string &gateName, string &gate, string &input) {
   gate.erase(gate.begin());
   int end = posend - pos2 - 1;
   input = line.substr(pos2+1, end);
-  //gatelist.push_back(line);
   gate = gate.substr(0, dif);
 }
 
@@ -159,54 +158,79 @@ void printMap(map<int, vector<string>> temp) {
     }
     cout << endl;
   }
-
 }
 
 // Gets the value of a specific gate
-void gateOutcome (string gateName, int gateSize, map<string,int> &temp) {
+void gateOutcome (string gateName, map<string,string> &temp, vector<string> gateInputData) {
   int code;
-  vector<int> inputs;
-  if (gateName == "AND") {
+  int neg;
+  string gateType = gateInputData[0];
+  char negCheck = gateType[0];
+  vector<string> inputs = gateInputData;
+  cout << negCheck << endl;
+  
+  // Checks if gate is a 
+  if ((gateType[0] == 'N' || gateType[2] == 'O') && (gateType != "NOT")) {
+    neg = 1;
+    size_t pos = gateType.find('N');
+    if (pos == 1) {
+      gateType = "XOR";
+    } else {
+      gateType = gateType.substr(pos+1);
+    }
+  }
+
+  if (gateType == "AND") {
     code = 1;
-  } else if (gateName == "OR") {
+  } else if (gateType == "OR") {
     code = 2;
-  } else if (gateName == "NOT") {
+  } else if (gateType == "NOT") {
     code = 3;
-  } else if (gateName == "XOR") {
+  } else if (gateType == "XOR") {
     code = 4;
   }
 
   switch (code) {
     case 1:
       cout << "AND" << endl;
-      for (int i = 0; i < inputs.size(); i++) {
-        if (inputs[i] != 1) {
-          temp[gateName] = 0;
+      for (int i = 1; i < inputs.size(); i++) {
+        if (temp[inputs[i]] != "1") {
+          temp[gateName] = "0";
+          if (neg == 1) {
+            temp[gateName] = "1";
+          }
           break;
         }
+        temp[gateName] = "1";
+        if (neg == 1) {
+          temp[gateName] = "0";
+        }
       }
-      temp[gateName] = 1;
       break;
     
     case 2:
       cout << "OR" << endl;
       for (int i = 0; i < inputs.size(); i++) {
-        if (inputs[i] == 1) {
-          temp[gateName] = 1;
+        if (temp[inputs[i]] == "1") {
+          temp[gateName] = "1";
+          if (neg == 1) {
+            temp[gateName] = "0";
+          }
           break;
         }
+        temp[gateName] = "0";
+        if (neg == 1) {
+          temp[gateName] = "1";
+        }
       }
-      temp[gateName] = 0;
       break;
 
     case 3:
       cout << "NOT" << endl;
-      for (int i = 0; i < inputs.size(); i++) {
-        if (inputs[i] == 1) {
-          temp[gateName] = 0;
-        } else {
-          temp[gateName] = 1;
-        }
+      if (temp[inputs[1]] == "1") {
+        temp[gateName] = "0";
+      } else {
+        temp[gateName] = "1";
       }
       break;
 
@@ -214,14 +238,20 @@ void gateOutcome (string gateName, int gateSize, map<string,int> &temp) {
       int totalOnes = 0;
       cout << "XOR" << endl;
       for (int i = 0; i < inputs.size(); i++) {
-        if (inputs[i] == 1) {
+        if (temp[inputs[i]] == "1") {
           totalOnes++;
         }
       }
       if (totalOnes%2 == 0) {
-        temp[gateName] = 0;
+        temp[gateName] = "0";
+        if (neg == 1) {
+          temp[gateName] = "1";
+        }
       } else {
-        temp[gateName] = 1;
+        temp[gateName] = "1";
+        if (neg == 1) {
+          temp[gateName] = "0";
+        }
       }
       break;
   }
@@ -229,17 +259,34 @@ void gateOutcome (string gateName, int gateSize, map<string,int> &temp) {
 }
 
 // Puts the gate inputs, type and name into one data structure
-void gateMapValues(map<string,vector<string>> gateMapData, vector<string> gatesList) {
-  string line, gateName, gate, input;
-  line = gatesList.front();
-  gateData(line, gateName, gate, input);
-
+void gateMapValues(map<string,vector<string>> &gateMapData, vector<string> gatesList) {
+  string gateName, gate, input, gateInputs, restInputs;
+  int size = 0;
+  size_t pos;
+  vector<string> data;
+  for (int i = 0; i < gatesList.size(); i++) {
+    gateData(gatesList[i], gateName, gate, input);
+    data.push_back(gate);
+    numInputs(size,gatesList[i]);
+    for (int j = 0; j < size; j++) {
+      pos = input.find(',');
+      gateInputs = input.substr(0,pos);
+      if (pos != string::npos) {
+        restInputs = input.substr(pos);
+        restInputs.erase(0,2);
+        input = restInputs;
+      }
+      data.push_back(gateInputs);
+    }
+    gateMapData[gateName] = data;
+    data.clear();
+  }
 }
 
 int main() {
   // Only used for the file reading
   ifstream Myfile;
-  Myfile.open("c17.bench");
+  Myfile.open("hw1.bench");
   vector<string> inputs;
   vector<string> outputs;
   
@@ -248,8 +295,9 @@ int main() {
 
   // Will contain all relevant data for future uses
   vector<string> gatelist;
-  map<string,int> gatevalue;
+  map<string,string> gatevalue;
   map<int,vector<string>> levelization;
+  map<string,vector<string>> gateMap;
 
   // Copies the data from the file into a vectors
   if (Myfile.is_open()) {
@@ -289,6 +337,7 @@ int main() {
   
   gatesList(gates,gatelist);
 
+  // Sort
   string temp = gatelist[0];
   if (isdigit(temp[0])) {
     Numsort(gatelist);
@@ -296,18 +345,12 @@ int main() {
     sort(gatelist.begin(), gatelist.end());
   }
 
-  // Testing
+  // Levelizer
   int currLevel = 0;
   int totLev = 1;
   int k = gatelist.size();
   vector<string> temp4 = gatelist;
   vector<string> temp5;
-
-  string tempxy = "NOT";
-  int sizet = 8;
-
-  //gateOutcome(tempxy, sizet);
-
   while (k != -1) {
     levelizer(temp4[0],levelization,totLev,currLevel, temp5);
     temp4.erase(temp4.begin());
@@ -321,6 +364,35 @@ int main() {
     k--;
   }
 
+  // Wire values map setting
+  for (auto a = levelization.begin(); a != levelization.end(); a++) {
+    vector<string> inputLevel = (*a).second;
+    for (int j = 0; j < inputLevel.size(); j++) {
+      gatevalue[inputLevel[j]] = "X";
+    }
+  }
+
   printMap(levelization);
+  gateMapValues(gateMap,gatelist);
+
+  // Testing set the initial conditions for the inputs
+  gatevalue["a"] = "1";
+  gatevalue["b"] = "0";
+  gatevalue["c"] = "1";
+  //gatevalue["6"] = "0";
+  //gatevalue["7"] = "1";
+  
+  gateOutcome("c'", gatevalue, gateMap["c'"]);
+
+  // just being used to print the entire map
+  for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
+    //vector<string> inputLevel = (*a).second;
+    cout << (*a).first << " " << (*a).second << endl;
+    //for (int j = 0; j < inputLevel.size(); j++) {
+      //cout << inputLevel[j] << " ";
+    //}
+    //cout << ":" << inputLevel.size() << endl;
+  }
+  
   return 0;
 }
