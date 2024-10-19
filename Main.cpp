@@ -186,6 +186,7 @@ void printfaults(map<int, vector<string>> temp) {
     }
     cout << endl;
   }
+  
 }
 // Gets the value of a specific gate
 void gateOutcome (string gateName, map<string,string> &temp, vector<string> gateInputData) {
@@ -284,7 +285,22 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
   }
 
 }
-
+void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<string,vector<string>> &gateInputData){
+  bool first=true;
+  for (auto a = temp.begin(); a != temp.end(); a++) {
+    if (first){
+      first=false;
+      continue;
+    }
+    cout<<endl<<"level "<<(*a).first;
+    vector<string> inputLevel = (*a).second;
+    for (int j = 0; j < inputLevel.size(); j++) {
+      cout<<"inputlevel[j]: "<<inputLevel[j]<<endl;
+      gateOutcome(inputLevel[j],temps,gateInputData[inputLevel[j]]);
+    }
+    cout << endl;
+  }
+}
 // Puts the gate inputs, type and name into one data structure
 void gateMapValues(map<string,vector<string>> &gateMapData, vector<string> gatesList) {
   string gateName, gate, input, gateInputs, restInputs;
@@ -406,12 +422,13 @@ int main() {
   // Testing set the initial conditions for the inputs
   gatevalue["a"] = "1";
   gatevalue["b"] = "0";
+  gatevalue["b'"] = "1";
   gatevalue["c"] = "1";
   //gatevalue["6"] = "0";
   //gatevalue["7"] = "1";
-  
-  gateOutcome("c'", gatevalue, gateMap["c'"]);
-
+  gateOutcome("d", gatevalue, gateMap["d"]); 
+  // gateOutcome("c'", gatevalue, gateMap["c'"]);
+  // gateoutfull(levelization,gatevalue,gateMap);
   // just being used to print the entire map
   for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
     //vector<string> inputLevel = (*a).second;
