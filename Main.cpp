@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <cstdbool>
+#include <deque>
 
 using namespace std;
 
@@ -293,13 +294,13 @@ void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<st
       first=false;
       continue;
     }
-    cout<<endl<<"level "<<(*a).first;
+    // cout<<endl<<"level "<<(*a).first;
     vector<string> inputLevel = (*a).second;
     for (int j = 0; j < inputLevel.size(); j++) {
-      cout<<"inputlevel[j]: "<<inputLevel[j]<<endl;
+      // cout<<"inputlevel[j]: "<<inputLevel[j]<<endl;
       gateOutcome(inputLevel[j],temps,gateInputData[inputLevel[j]]);
     }
-    cout << endl;
+    // cout << endl;
   }
 }
 
@@ -327,11 +328,37 @@ void gateMapValues(map<string,vector<string>> &gateMapData, vector<string> gates
     data.clear();
   }
 }
-
+void resetgatevalues(map<string,string> &val,map<int,vector<string>> &leveliz){
+  for (auto a = leveliz.begin(); a != leveliz.end(); a++) {
+    vector<string> inputLevel = (*a).second;
+    for (int j = 0; j < inputLevel.size(); j++) {
+      val[inputLevel[j]] = "X";
+    }
+  }
+}
+void cinput(map<string,string> &val,map<int,vector<string>> &leveliz, string inputs){
+  for (auto a = leveliz.begin(); a != leveliz.end(); a++) {
+    vector<string> inputLevel = (*a).second;
+    for (int j = 0; j < inputLevel.size(); j++) {
+      val[inputLevel[j]] = inputs[0];
+      inputs.erase(0,1);
+      if(inputs.size()==0){
+        return;
+      }
+    }
+  }
+}
 int main() {
   // Only used for the file reading
   ifstream Myfile;
-  Myfile.open("hw1.bench");
+  string filename;
+  cout<<"what file do you want to simulate?"<<endl;
+  cin>>filename;
+  Myfile.open(filename);
+  if(!Myfile.is_open()){
+    cout<<"ERROR: File not found";
+    return 0;
+  }
   vector<string> inputs;
   vector<string> outputs;
   
@@ -410,27 +437,63 @@ int main() {
   }
 
   // Wire values map setting
-  for (auto a = levelization.begin(); a != levelization.end(); a++) {
-    vector<string> inputLevel = (*a).second;
-    for (int j = 0; j < inputLevel.size(); j++) {
-      gatevalue[inputLevel[j]] = "X";
-    }
-  }
+  resetgatevalues(gatevalue,levelization);
 
   printMap(levelization);
   printfaults(levelization);
   gateMapValues(gateMap,gatelist);
+//all 1 tv  
+cout<<"===============\nTest vector of all 1:\n";
+for (auto a = levelization.begin(); a != levelization.end(); a++) {
+    vector<string> inputLevel = (*a).second;
+    for (int j = 0; j < inputLevel.size(); j++) {
+      gatevalue[inputLevel[j]] = "1";
+    }
+    break;
+  } 
+  gateoutfull(levelization,gatevalue,gateMap);
+  for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
+    cout << (*a).first << " " << (*a).second << endl;
+  }
+  resetgatevalues(gatevalue,levelization);
+cout<<"===============\nTest vector of all 0:\n";
+for (auto a = levelization.begin(); a != levelization.end(); a++) {
+    vector<string> inputLevel = (*a).second;
+    for (int j = 0; j < inputLevel.size(); j++) {
+      gatevalue[inputLevel[j]] = "0";
+    }
+    break;
+  } 
+  gateoutfull(levelization,gatevalue,gateMap);
+  for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
+    cout << (*a).first << " " << (*a).second << endl;
+  }
+  resetgatevalues(gatevalue,levelization);
+  string inp;
+  cout<<"what custom Test vector do you want to test?\nProvide in the form ";
+  for(int i=0;i<inputs.size();i++){
+    cout<<"X";
+  }
+  cout<<endl;
+  cin>>inp;
+  cinput(gatevalue,levelization,inp);
+  cout<<"what fault do you want so test?\n Provide in form {nodename} {value stuck at}\n";
+  string badnode,vall;
+  // cin>>badnode<<vall;
+  gateoutfull(levelization,gatevalue,gateMap);
+  for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
+    cout << (*a).first << " " << (*a).second << endl;
+  }
 
   // Testing set the initial conditions for the inputs
-  gatevalue["a"] = "1";
-  gatevalue["b"] = "0";
+  // gatevalue["a"] = "1";
+  // gatevalue["b"] = "0";
   // gatevalue["b'"] = "1";
-  gatevalue["c"] = "1";
+  // gatevalue["c"] = "1";
   //gatevalue["6"] = "0";
   //gatevalue["7"] = "1";
   //gateOutcome("d", gatevalue, gateMap["d"]); 
   // gateOutcome("c'", gatevalue, gateMap["c'"]);
-  gateoutfull(levelization,gatevalue,gateMap);
 
   // just being used to print the entire map
   // for (auto a = gateMap.begin(); a != gateMap.end(); a++) {
@@ -438,9 +501,6 @@ int main() {
   //   gateOutcome(gateN, gatevalue, gateMap[gateN]);
   // }
 
-  for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
-    cout << (*a).first << " " << (*a).second << endl;
-  }
   
   return 0;
 }
