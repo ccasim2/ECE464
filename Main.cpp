@@ -192,7 +192,7 @@ void printfaults(map<int, vector<string>> temp) {
 // Gets the value of a specific gate
 void gateOutcome (string gateName, map<string,string> &temp, vector<string> gateInputData) {
   int code;
-  int neg;
+  int neg=0;
   string gateType = gateInputData[0];
   char negCheck = gateType[0];
   vector<string> inputs = gateInputData;
@@ -424,19 +424,19 @@ int main() {
   // Testing set the initial conditions for the inputs
   gatevalue["a"] = "1";
   gatevalue["b"] = "0";
-  gatevalue["b'"] = "1";
+  // gatevalue["b'"] = "1";
   gatevalue["c"] = "1";
   //gatevalue["6"] = "0";
   //gatevalue["7"] = "1";
   //gateOutcome("d", gatevalue, gateMap["d"]); 
   // gateOutcome("c'", gatevalue, gateMap["c'"]);
-  // gateoutfull(levelization,gatevalue,gateMap);
+  gateoutfull(levelization,gatevalue,gateMap);
 
   // just being used to print the entire map
-  for (auto a = gateMap.begin(); a != gateMap.end(); a++) {
-    string gateN = (*a).first;
-    gateOutcome(gateN, gatevalue, gateMap[gateN]);
-  }
+  // for (auto a = gateMap.begin(); a != gateMap.end(); a++) {
+  //   string gateN = (*a).first;
+  //   gateOutcome(gateN, gatevalue, gateMap[gateN]);
+  // }
 
   for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
     cout << (*a).first << " " << (*a).second << endl;
