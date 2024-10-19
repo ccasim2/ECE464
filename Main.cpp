@@ -160,6 +160,32 @@ void printMap(map<int, vector<string>> temp) {
   }
 }
 
+void printfaults(map<int, vector<string>> temp) {
+  bool first=true;
+  string placeholder;
+  for (auto a = temp.begin(); a != temp.end(); a++) {
+    if((*a).first==0){//first col
+      cout << endl << "Faults at inputs: " <<endl;
+      placeholder="Input";
+    }
+    else if((*a).first==(*temp.end()).first){//last col
+      cout << endl << "Faults at outputs: " <<endl;
+      placeholder="Output";
+    }
+    else{
+      if(first){
+      cout<<endl<< "faults at internal nodes:"<<endl;       
+      first=false;
+      placeholder="Internal node";
+      }
+    }
+    vector<string> inputLevel = (*a).second;
+    for (int j = 0; j < inputLevel.size(); j++) {
+      cout << endl<<placeholder<<" "<<inputLevel[j]<< " can be stuck at 0/1."<<endl;
+    }
+    cout << endl;
+  }
+}
 // Gets the value of a specific gate
 void gateOutcome (string gateName, map<string,string> &temp, vector<string> gateInputData) {
   int code;
@@ -373,6 +399,7 @@ int main() {
   }
 
   printMap(levelization);
+  printfaults(levelization);
   gateMapValues(gateMap,gatelist);
 
   // Testing set the initial conditions for the inputs
