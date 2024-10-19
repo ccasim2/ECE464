@@ -188,6 +188,7 @@ void printfaults(map<int, vector<string>> temp) {
   }
   
 }
+
 // Gets the value of a specific gate
 void gateOutcome (string gateName, map<string,string> &temp, vector<string> gateInputData) {
   int code;
@@ -195,9 +196,8 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
   string gateType = gateInputData[0];
   char negCheck = gateType[0];
   vector<string> inputs = gateInputData;
-  cout << negCheck << endl;
   
-  // Checks if gate is a 
+  // Checks if gate is a NAND, NOR, XNOR
   if ((gateType[0] == 'N' || gateType[2] == 'O') && (gateType != "NOT")) {
     neg = 1;
     size_t pos = gateType.find('N');
@@ -220,7 +220,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
 
   switch (code) {
     case 1:
-      cout << "AND" << endl;
+      //cout << "AND" << endl;
       for (int i = 1; i < inputs.size(); i++) {
         if (temp[inputs[i]] != "1") {
           temp[gateName] = "0";
@@ -237,8 +237,8 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
       break;
     
     case 2:
-      cout << "OR" << endl;
-      for (int i = 0; i < inputs.size(); i++) {
+      //cout << "OR" << endl;
+      for (int i = 1; i < inputs.size(); i++) {
         if (temp[inputs[i]] == "1") {
           temp[gateName] = "1";
           if (neg == 1) {
@@ -254,7 +254,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
       break;
 
     case 3:
-      cout << "NOT" << endl;
+      //cout << "NOT" << endl;
       if (temp[inputs[1]] == "1") {
         temp[gateName] = "0";
       } else {
@@ -264,8 +264,8 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
 
     case 4:
       int totalOnes = 0;
-      cout << "XOR" << endl;
-      for (int i = 0; i < inputs.size(); i++) {
+      //cout << "XOR" << endl;
+      for (int i = 1; i < inputs.size(); i++) {
         if (temp[inputs[i]] == "1") {
           totalOnes++;
         }
@@ -285,6 +285,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
   }
 
 }
+
 void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<string,vector<string>> &gateInputData){
   bool first=true;
   for (auto a = temp.begin(); a != temp.end(); a++) {
@@ -301,6 +302,7 @@ void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<st
     cout << endl;
   }
 }
+
 // Puts the gate inputs, type and name into one data structure
 void gateMapValues(map<string,vector<string>> &gateMapData, vector<string> gatesList) {
   string gateName, gate, input, gateInputs, restInputs;
@@ -426,17 +428,18 @@ int main() {
   gatevalue["c"] = "1";
   //gatevalue["6"] = "0";
   //gatevalue["7"] = "1";
-  gateOutcome("d", gatevalue, gateMap["d"]); 
+  //gateOutcome("d", gatevalue, gateMap["d"]); 
   // gateOutcome("c'", gatevalue, gateMap["c'"]);
   // gateoutfull(levelization,gatevalue,gateMap);
+
   // just being used to print the entire map
+  for (auto a = gateMap.begin(); a != gateMap.end(); a++) {
+    string gateN = (*a).first;
+    gateOutcome(gateN, gatevalue, gateMap[gateN]);
+  }
+
   for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
-    //vector<string> inputLevel = (*a).second;
     cout << (*a).first << " " << (*a).second << endl;
-    //for (int j = 0; j < inputLevel.size(); j++) {
-      //cout << inputLevel[j] << " ";
-    //}
-    //cout << ":" << inputLevel.size() << endl;
   }
   
   return 0;
