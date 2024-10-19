@@ -163,6 +163,7 @@ void printMap(map<int, vector<string>> temp) {
 void printfaults(map<int, vector<string>> temp) {
   bool first=true;
   string placeholder;
+  cout<<"====================="<<endl;
   for (auto a = temp.begin(); a != temp.end(); a++) {
     if((*a).first==0){//first col
       cout << endl << "Faults at inputs: " <<endl;
