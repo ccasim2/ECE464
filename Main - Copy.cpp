@@ -189,9 +189,19 @@ void printfaults(map<int, vector<string>> temp) {
   }
   
 }
-
+string dhelper(string gval, string bval){
+  if (gval==bval){
+    return gval;
+  }
+  else if(gval=="1"){
+    return "D";
+  }
+  else if(gval=="0"){
+    return "D'";
+  }
+}
 // Gets the value of a specific gate
-void gateOutcome (string gateName, map<string,string> &temp, vector<string> gateInputData) {
+void gateOutcome (string gateName, map<string,string> &temp, vector<string> gateInputData, string node="<empty>", string vall="-1") {
   int code;
   int neg=0;
   bool d=false;
@@ -393,7 +403,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
 
 }
 
-void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<string,vector<string>> &gateInputData){
+void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<string,vector<string>> &gateInputData,string node="<empty>", string vall="-1"){
   bool first=true;
   for (auto a = temp.begin(); a != temp.end(); a++) {
     if (first){
@@ -404,7 +414,10 @@ void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<st
     vector<string> inputLevel = (*a).second;
     for (int j = 0; j < inputLevel.size(); j++) {
       // cout<<"inputlevel[j]: "<<inputLevel[j]<<endl;
-      gateOutcome(inputLevel[j],temps,gateInputData[inputLevel[j]]);
+      gateOutcome(inputLevel[j],temps,gateInputData[inputLevel[j]],node,vall);
+      if(inputLevel[j]==node){
+        gateInputData[inputLevel[j]]=dhelper(temps[inputLevel[j]],vall);
+      }
     }
     // cout << endl;
   }
@@ -590,6 +603,7 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   cout<<"what fault do you want so test?\n Provide in form:{nodename} {value stuck at}\n";
   string badnode,vall;
   cin>>badnode,vall;
+  gateoutfull(levelization,gatevalue,gateMap,badnode,vall);
   // cin>>badnode<<vall;
 
   // Testing set the initial conditions for the inputs
