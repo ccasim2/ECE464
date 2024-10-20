@@ -168,16 +168,16 @@ void printfaults(map<int, vector<string>> temp) {
   for (auto a = temp.begin(); a != temp.end(); a++) {
     // cout<<(*a).first<<temp.size()-1;
     if((*a).first==0){//first col
-      cout << endl << "\nFaults at inputs: " <<endl;
+      cout << endl << "\nFaults possible at inputs: " <<endl;
       placeholder="Input";
     }
     else if((*a).first==(temp.size()-1)){//last col
-      cout << endl << "\nFaults at outputs: " <<endl;
+      cout << endl << "\nFaults possible at outputs: " <<endl;
       placeholder="Output";
     }
     else{
       if(first){
-      cout<<endl<< "\nfaults at internal nodes:"<<endl;       
+      cout<<endl<< "\nfaults possible at internal nodes:"<<endl;       
       first=false;
       placeholder="Internal node";
       }
@@ -191,7 +191,7 @@ void printfaults(map<int, vector<string>> temp) {
   
 }
 string dhelper(string gval, string bval){
-  cout<<"i am here"<<gval<<bval;
+  // cout<<"i am here"<<gval<<bval;
   if (gval==bval){
     return gval;
   }
@@ -653,11 +653,11 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   }
   resetgatevalues(gatevalue,levelization);
   string inp;
-  cout<<"what custom Test vector do you want to test?\nProvide in the form ";
+  cout<<"\n=============\nwhat custom Test vector do you want to test?\nProvide in the form ";
   for(int i=0;i<inputs.size();i++){
     cout<<"X";
   }
-  cout<<endl;
+  cout<<":"<<endl;
   cin>>inp;
   cinput(gatevalue,levelization,inp);
   // gateoutfull(levelization,gatevalue,gateMap);
@@ -665,7 +665,7 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   string badnode;
   string vall;
   cin>>badnode>>vall;
-  cout<<"badnode:"<<badnode<<"\nvall:"<<vall;
+  // cout<<"badnode:"<<badnode<<"\nvall:"<<vall;
   for(auto iter: inputs){
     if (iter==badnode){
       gatevalue[iter]=dhelper(gatevalue[iter],vall);
@@ -678,9 +678,9 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   vector<string> outlet=levelization[levelization.size()-1];
   bool good=false;
   for(auto nod: outlet){
-    cout<<nod;
+    // cout<<nod;
     if (gatevalue[nod]=="D"||gatevalue[nod]=="D'"){
-      cout<<"it can test it";
+      cout<<"it can be tested, b/c D/D' propgates to the output node "<<nod;
       good=true;
     }
   }
