@@ -90,7 +90,7 @@ void gatesList(list<string> &gates, vector<string> &gatelist) {
     numInputs(n,gateInput);
 
     // Checks for total amount of inputs into each gate
-    cout << n << " Input " << gateType << " gate with input " << gateInput << endl;
+    cout << n << " Input " << gateType << " gate " << gateName << " with input " << gateInput << endl;
     gates.pop_front();
     i--;
   }
@@ -414,10 +414,12 @@ void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<st
     vector<string> inputLevel = (*a).second;
     for (int j = 0; j < inputLevel.size(); j++) {
       // cout<<"inputlevel[j]: "<<inputLevel[j]<<endl;
-      gateOutcome(inputLevel[j],temps,gateInputData[inputLevel[j]],node,vall);
       if(inputLevel[j]==node){
-        gateInputData[inputLevel[j]]=dhelper(temps[inputLevel[j]],vall);
+        vector<string> temp20;
+        temp20.push_back(dhelper(temps[inputLevel[j]],vall));
+        gateInputData[inputLevel[j]]= temp20;
       }
+      gateOutcome(inputLevel[j],temps,gateInputData[inputLevel[j]],node,vall);
     }
     // cout << endl;
   }
@@ -602,25 +604,24 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   }
   cout<<"what fault do you want so test?\n Provide in form:{nodename} {value stuck at}\n";
   string badnode,vall;
-  cin>>badnode,vall;
+  cin>>badnode>>vall;
+  if (vall == "0") {
+    gatevalue[badnode] = "D";
+  } else {
+    gatevalue[badnode] = "D'";
+  }
+  cout << badnode << " " << gatevalue[badnode] << endl;
   gateoutfull(levelization,gatevalue,gateMap,badnode,vall);
   // cin>>badnode<<vall;
 
   // Testing set the initial conditions for the inputs
-  // gatevalue["a"] = "1";
-  // gatevalue["b"] = "0";
-  // gatevalue["b'"] = "1";
-  // gatevalue["c"] = "1";
-  //gatevalue["6"] = "0";
-  //gatevalue["7"] = "1";
-  //gateOutcome("d", gatevalue, gateMap["d"]); 
-  // gateOutcome("c'", gatevalue, gateMap["c'"]);
 
   // just being used to print the entire map
-  // for (auto a = gateMap.begin(); a != gateMap.end(); a++) {
+  for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
   //   string gateN = (*a).first;
   //   gateOutcome(gateN, gatevalue, gateMap[gateN]);
-  // }
+    cout << (*a).first << " " << (*a).second << endl;
+  }
 
   
   return 0;
