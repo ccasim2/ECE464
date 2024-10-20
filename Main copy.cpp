@@ -191,7 +191,6 @@ void printfaults(map<int, vector<string>> temp) {
   
 }
 string dhelper(string gval, string bval){
-  cout<<"i am here"<<gval<<bval;
   if (gval==bval){
     return gval;
   }
@@ -662,10 +661,8 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   cinput(gatevalue,levelization,inp);
   // gateoutfull(levelization,gatevalue,gateMap);
   cout<<"what fault do you want to test?\n Provide in form:{nodename} {value stuck at}\n";
-  string badnode;
-  string vall;
-  cin>>badnode>>vall;
-  cout<<"badnode:"<<badnode<<"\nvall:"<<vall;
+  string badnode,vall;
+  cin>>badnode,vall;
   for(auto iter: inputs){
     if (iter==badnode){
       gatevalue[iter]=dhelper(gatevalue[iter],vall);

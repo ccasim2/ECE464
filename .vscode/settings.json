@@ -60,6 +60,8 @@
   "files.associations": {
     "ostream": "cpp",
     "iostream": "cpp",
-    "fstream": "cpp"
+    "fstream": "cpp",
+    "algorithm": "cpp",
+    "map": "cpp"
   }
 }
