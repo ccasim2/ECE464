@@ -675,9 +675,8 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
     cout << (*a).first << " " << (*a).second << endl;
   }
-  vector<string> outlet=levelization[levelization.size()-1];
   bool good=false;
-  for(auto nod: outlet){
+  for(auto nod: outputs){
     // cout<<nod;
     if (gatevalue[nod]=="D"||gatevalue[nod]=="D'"){
       cout<<"it can be tested, b/c D/D' propgates to the output node "<<nod;
