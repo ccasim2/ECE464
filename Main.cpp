@@ -161,34 +161,21 @@ void printMap(map<int, vector<string>> temp) {
   }
 }
 
-void printfaults(map<int, vector<string>> temp) {
-  bool first=true;
-  string placeholder;
+void printfaults(vector<string> gate, vector<string> input, vector<string> output) {
   cout<<"====================="<<endl;
-  for (auto a = temp.begin(); a != temp.end(); a++) {
-    // cout<<(*a).first<<temp.size()-1;
-    if((*a).first==0){//first col
       cout << endl << "\nFaults possible at inputs: " <<endl;
-      placeholder="Input";
-    }
-    else if((*a).first==(temp.size()-1)){//last col
-      cout << endl << "\nFaults possible at outputs: " <<endl;
-      placeholder="Output";
-    }
-    else{
-      if(first){
-      cout<<endl<< "\nfaults possible at internal nodes:"<<endl;       
-      first=false;
-      placeholder="Internal node";
+      for(auto i: input){
+        cout << endl<<"Input "<<i<< " can be stuck at 0/1."<<endl;
       }
-    }
-    vector<string> inputLevel = (*a).second;
-    for (int j = 0; j < inputLevel.size(); j++) {
-      cout << endl<<placeholder<<" "<<inputLevel[j]<< " can be stuck at 0/1."<<endl;
-    }
-    // cout << endl;
-  }
-  
+      cout << endl << "\nFaults possible at internal nodes: " <<endl;
+      for(auto g: gate){
+        cout << endl<<"Internal node "<<g<< " can be stuck at 0/1."<<endl;
+      }
+      cout<<endl<< "\nfaults possible at output:"<<endl;       
+      for(auto o: output){
+        cout << endl<<"Output "<<o<< " can be stuck at 0/1."<<endl;
+      }
+      
 }
 string dhelper(string gval, string bval){
   // cout<<"i am here"<<gval<<bval;
@@ -237,10 +224,12 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
     code = 3;
   } else if (gateType == "XOR") {
     code = 4;
+  } else if(gateType =="BUFF" ){
+    code= 5;
   }
 
   switch (code) {
-    case 1:
+    case 1:{
       //cout << "AND" << endl;
       for (int i = 1; i < inputs.size(); i++) {
         if (temp[inputs[i]] == "1") {
@@ -319,8 +308,9 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
       }
       cout<<") = ";
       break;
-    
+    }
     case 2:
+    {
       //cout << "OR" << endl;
       for (int i = 1; i < inputs.size(); i++) {
         if(temp[inputs[i]]=="1"){
@@ -396,8 +386,9 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
       }
       cout<<") = ";
       break;
-
+}
     case 3:
+    {
       //cout << "NOT" << endl;
       if (temp[inputs[1]] == "1") {
         temp[gateName] = "0";
@@ -420,8 +411,9 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
       }
       cout<<") = ";
       break;
-
+}
     case 4:
+    {
       int totalOnes = 0;
       int totald=0;
       int totaldn=0;
@@ -460,6 +452,33 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
       }
       cout<<") = ";
       break;
+}
+    case 5:
+    // BUFF
+    {
+    f=true;
+    if (temp[inputs[1]] == "1") {
+        temp[gateName] = "1";
+      } else if (temp[inputs[1]] == "0") {
+        temp[gateName] = "0";
+      }
+      else if (temp[inputs[1]] == "D"){
+        temp[gateName]="D";
+      }
+      else if (temp[inputs[1]] == "D'"){
+        temp[gateName]="D'";
+      }
+      cout<<gateName<<" = "<<filler<<gateType<<"(";
+      for(auto names: inputs){
+        if(f){
+          f=false;
+          continue;
+        }
+        cout<<names<<" ,";
+      }
+      cout<<") = ";
+      break;
+      }
   }
 
 }
@@ -518,27 +537,25 @@ void resetgatevalues(map<string,string> &val,map<int,vector<string>> &leveliz){
     }
   }
 }
-void cinput(map<string,string> &val,map<int,vector<string>> &leveliz, string inputs){
-  for (auto a = leveliz.begin(); a != leveliz.end(); a++) {
-    vector<string> inputLevel = (*a).second;
-    for (int j = 0; j < inputLevel.size(); j++) {
-      val[inputLevel[j]] = inputs[0];
-      inputs.erase(0,1);
-      if(inputs.size()==0){
+void cinput(map<string,string> &val,vector<string> inputs, string input){
+    for (auto i: inputs) {
+      val[i] = input[0];
+      input.erase(0,1);
+      if(input.size()==0){
         return;
       }
     }
   }
-}
-void testcircuit(map<int,vector<string>> level,map<string,string>gatevalue,map<string,vector<string>> mapofgate, vector<string> inputs, string cinputs){
+
+void testcircuit(map<int,vector<string>> level,map<string,string>gatevalue,map<string,vector<string>> mapofgate, vector<string> inputs, vector<string> outputs, string cinputs){
   int totalcount=0;
   int detectcount=0;
-  vector<string> outlet=level[level.size()-1];
+  // vector<string> outlet=level[level.size()-1];
   vector<string> tval ={"0","1"};
   for (auto tnode = gatevalue.begin(); tnode != gatevalue.end(); tnode++) {
     for(auto val:tval){
       resetgatevalues(gatevalue,level);
-      cinput(gatevalue,level,cinputs);
+      cinput(gatevalue,inputs,cinputs);
       for(auto iter : inputs){
         if (iter==(*tnode).first){
           gatevalue[iter]=dhelper(gatevalue[iter],val);
@@ -546,7 +563,7 @@ void testcircuit(map<int,vector<string>> level,map<string,string>gatevalue,map<s
       }
       gateoutfull(level,gatevalue,mapofgate,(*tnode).first,val);
       bool good=false;
-      for(auto nod: outlet){
+      for(auto nod: outputs){
         if (gatevalue[nod]=="D"||gatevalue[nod]=="D'"){
         totalcount++;
         detectcount++;
@@ -559,6 +576,23 @@ void testcircuit(map<int,vector<string>> level,map<string,string>gatevalue,map<s
     }
   }
   cout<<"======\ntotal # of faults tested: "<<totalcount<<"\n# of detected faults: "<<detectcount<<"\nperecentage of faults detected: "<<(float)detectcount/float(totalcount);
+}
+void outputv(vector<string> inputs, vector<string> gates, vector<string> outputs, map<string,string> gatevalue){
+  cout<<"\nInputs:\n";
+  for(auto i : inputs){
+    cout<< i<<"="<<gatevalue[i];
+    cout<<endl;
+  }
+  cout<<"\nInternal Gates:\n";
+  for(auto g : gates){
+    cout<< g<<"="<<gatevalue[g];
+    cout<<endl;
+  }
+  cout<<"\nOutputs:\n";
+  for(auto o : outputs){
+    cout<< o<<"="<<gatevalue[o];
+    cout<<endl;
+  }
 }
 int main() {
   // Only used for the file reading
@@ -573,7 +607,7 @@ int main() {
   }
   vector<string> inputs;
   vector<string> outputs;
-  
+  vector<string> igates;
   // Only used in file reading and will be empty at the end
   list<string> gates;
 
@@ -582,11 +616,16 @@ int main() {
   map<string,string> gatevalue;
   map<int,vector<string>> levelization;
   map<string,vector<string>> gateMap;
-
+   
   // Copies the data from the file into a vectors
   if (Myfile.is_open()) {
     string word;
     while (getline(Myfile, word)) {
+      size_t pos = word.find('=');
+      if(string::npos!=pos ){
+         igates.push_back(word.substr(0,pos-1));
+
+      }
       if (word[0] == 'I') {
         size_t pos = word.find('(');
         word = word.substr(pos+1);
@@ -652,36 +691,31 @@ int main() {
   resetgatevalues(gatevalue,levelization);
 
   printMap(levelization);
-  printfaults(levelization);
+  printfaults(igates,inputs,outputs);
   gateMapValues(gateMap,gatelist);
 //all 1 tv  
 cout<<"===============\nTest vector of all 1:\n";
-for (auto a = levelization.begin(); a != levelization.end(); a++) {
-    vector<string> inputLevel = (*a).second;
-    for (int j = 0; j < inputLevel.size(); j++) {
-      gatevalue[inputLevel[j]] = "1";
-    }
-    break;
-  } 
+// for (auto a = levelization.begin(); a != levelization.end(); a++) {
+//     vector<string> inputLevel = (*a).second;
+//     for (int j = 0; j < inputLevel.size(); j++) {
+//       gatevalue[inputLevel[j]] = "1";
+//     }
+//     break;
+//   }
+for(auto i: inputs){
+  gatevalue[i]="1";
+} 
   cout<<"\nresults:\n";
   gateoutfull(levelization,gatevalue,gateMap);
-  for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
-    cout << (*a).first << " = " << (*a).second << endl;
-  }
+  outputv(inputs,igates,outputs,gatevalue);
   resetgatevalues(gatevalue,levelization);
 cout<<"===============\nTest vector of all 0:\n";
-for (auto a = levelization.begin(); a != levelization.end(); a++) {
-    vector<string> inputLevel = (*a).second;
-    for (int j = 0; j < inputLevel.size(); j++) {
-      gatevalue[inputLevel[j]] = "0";
-    }
-    break;
-  } 
+for(auto i: inputs){
+  gatevalue[i]="0";
+} 
   gateoutfull(levelization,gatevalue,gateMap);
   cout<<"\nresults:\n";
-  for (auto a = gatevalue.begin(); a != gatevalue.end(); a++) {
-    cout << (*a).first << " = " << (*a).second << endl;
-  }
+  outputv(inputs,igates,outputs,gatevalue);
   resetgatevalues(gatevalue,levelization);
   string inp;
   cout<<"\n=============\nwhat custom Test vector do you want to test?\nProvide in the form ";
@@ -690,7 +724,7 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   }
   cout<<":"<<endl;
   cin>>inp;
-  cinput(gatevalue,levelization,inp);
+  cinput(gatevalue,inputs,inp);
   // gateoutfull(levelization,gatevalue,gateMap);
   cout<<"what fault do you want to test?\n Provide in form:{nodename} {value stuck at}\n";
   string badnode;
@@ -699,7 +733,9 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   // cout<<"badnode:"<<badnode<<"\nvall:"<<vall;
   for(auto iter: inputs){
     if (iter==badnode){
+      // cout<<"before thing";
       gatevalue[iter]=dhelper(gatevalue[iter],vall);
+    // cout<<"after thing";
     }
   }
   gateoutfull(levelization,gatevalue,gateMap,badnode,vall);
@@ -720,7 +756,7 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   cout<<"\n=============\nGive Test vector for full fault list check\n";
   string tv;
   cin>>tv;
-  testcircuit(levelization,gatevalue,gateMap,inputs,tv);
+  testcircuit(levelization,gatevalue,gateMap,inputs,outputs,tv);
   // vector<string> *output= --levelization.end();
   // for(auto a: vector<string> *output){
   //   cout<<a;

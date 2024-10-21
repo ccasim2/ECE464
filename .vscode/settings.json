@@ -62,6 +62,7 @@
     "iostream": "cpp",
     "fstream": "cpp",
     "algorithm": "cpp",
-    "map": "cpp"
+    "map": "cpp",
+    "*.tcc": "cpp"
   }
 }
