@@ -162,19 +162,24 @@ void printMap(map<int, vector<string>> temp) {
 }
 
 void printfaults(vector<string> gate, vector<string> input, vector<string> output) {
+  int count=0;
   cout<<"====================="<<endl;
       cout << endl << "\nFaults possible at inputs: " <<endl;
       for(auto i: input){
+        count=count+2;
         cout << endl<<"Input "<<i<< " can be stuck at 0/1."<<endl;
       }
       cout << endl << "\nFaults possible at internal nodes: " <<endl;
       for(auto g: gate){
+        count=count+2;
         cout << endl<<"Internal node "<<g<< " can be stuck at 0/1."<<endl;
       }
       cout<<endl<< "\nfaults possible at output:"<<endl;       
       for(auto o: output){
+        count=count+2;
         cout << endl<<"Output "<<o<< " can be stuck at 0/1."<<endl;
       }
+      cout<<"Total # of potential faults: "<<count<<endl;
       
 }
 string dhelper(string gval, string bval){
@@ -223,7 +228,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
   } else if (gateType == "NOT") {
     code = 3;
   } else if (gateType == "XOR") {
-    code = 4;
+    code = 4;//xor
   } else if(gateType =="BUFF" ){
     code= 5;
   }
@@ -412,11 +417,12 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
       cout<<") = ";
       break;
 }
-    case 4:
+    case 4://xor
     {
       int totalOnes = 0;
       int totald=0;
       int totaldn=0;
+      string tval="X";
       //cout << "XOR" << endl;
       for (int i = 1; i < inputs.size(); i++) {
         if (temp[inputs[i]] == "1") {
@@ -429,19 +435,55 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
           totaldn++;
         }
       }
-      if ((totalOnes+totald-totaldn)%2 == 1) {
-        if (neg == 1) {
-          temp[gateName] = "1";
+      if (((totaldn)%2 == 0)&&(totald%2==0)&&(totalOnes%2==0)) {
+        tval="0";
+        }
+        else if(((totaldn)%2 == 0)&&(totald%2==0)&&(totalOnes%2!=0)){
+        tval="1";
+        }
+        else if(((totaldn)%2 == 0)&&(totald%2!=0)&&(totalOnes%2==0)){
+        tval="D";
+        }
+        else if(((totaldn)%2 == 0)&&(totald%2!=0)&&(totalOnes%2!=0)){
+        tval="D'";
+        }
+        else if(((totaldn)%2 != 0)&&(totald%2==0)&&(totalOnes%2==0)){
+        tval="D'";
+        }
+        else if(((totaldn)%2 != 0)&&(totald%2==0)&&(totalOnes%2!=0)){
+        tval="D";
+        }
+        else if(((totaldn)%2 != 0)&&(totald%2!=0)&&(totalOnes%2==0)){
+         tval="1"; 
+        }
+        else if(((totaldn)%2 != 0)&&(totald%2!=0)&&(totalOnes%2!=0)){
+        tval="0";
+        }
+      
+        
+        if (neg == 0) {
+          temp[gateName] = tval;
         }
         else{
-          temp[gateName] = "0";
+          if(tval=="0"){
+            temp[gateName]="1";
+          }
+          else if(tval=="1"){
+            temp[gateName]="0";
+          }
+          else if(tval=="D"){
+            temp[gateName]="D'";
+          }
+          else if(tval=="D'"){
+            temp[gateName]="D";
+          }
         }
       // } else {
       //   temp[gateName] = "1";
       //   if (neg == 1) {
       //     temp[gateName] = "0";
       //   }
-      }
+      
       cout<<gateName<<" = "<<filler<<gateType<<"(";
       for(auto names: inputs){
         if(f){
@@ -554,6 +596,7 @@ void testcircuit(map<int,vector<string>> level,map<string,string>gatevalue,map<s
   vector<string> tval ={"0","1"};
   for (auto tnode = gatevalue.begin(); tnode != gatevalue.end(); tnode++) {
     for(auto val:tval){
+      cout<<"\n\nTesting node "<<(*tnode).first<<" with stuck at "<<val<<" fault"<<endl;
       resetgatevalues(gatevalue,level);
       cinput(gatevalue,inputs,cinputs);
       for(auto iter : inputs){
@@ -565,16 +608,22 @@ void testcircuit(map<int,vector<string>> level,map<string,string>gatevalue,map<s
       bool good=false;
       for(auto nod: outputs){
         if (gatevalue[nod]=="D"||gatevalue[nod]=="D'"){
+          good=true;
+          break;
+        }
+      }
+        if (good){
+        cout<<(*tnode).first<<" stuck at "<<val<<" can be detected at output\n";
         totalcount++;
         detectcount++;
-        break;
         }
         else{
+          cout<<(*tnode).first<<" stuck at "<<val<<" can't be detected at output\n";          
           totalcount++;
         }
       }
     }
-  }
+  
   cout<<"======\ntotal # of faults tested: "<<totalcount<<"\n# of detected faults: "<<detectcount<<"\nperecentage of faults detected: "<<(float)detectcount/float(totalcount);
 }
 void outputv(vector<string> inputs, vector<string> gates, vector<string> outputs, map<string,string> gatevalue){
