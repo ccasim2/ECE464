@@ -262,7 +262,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
           return;
         }
         else if (temp[inputs[i]] == "D"){
@@ -317,7 +317,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
       break;
     
     case 2:
@@ -338,7 +338,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
           return;
         }
         if(temp[inputs[i]]=="0"){
@@ -394,7 +394,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
       break;
 
     case 3:
@@ -418,7 +418,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
       break;
 
     case 4:
@@ -458,7 +458,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
       break;
   }
 
@@ -479,6 +479,7 @@ void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<st
       if(inputLevel[j]==node){
         temps[inputLevel[j]]=dhelper(temps[inputLevel[j]],vall);
       }
+      cout<<temps[inputLevel[j]]<<endl;
     }
     // cout << endl;
   }
@@ -528,6 +529,36 @@ void cinput(map<string,string> &val,map<int,vector<string>> &leveliz, string inp
       }
     }
   }
+}
+void testcircuit(map<int,vector<string>> level,map<string,string>gatevalue,map<string,vector<string>> mapofgate, vector<string> inputs, string cinputs){
+  int totalcount=0;
+  int detectcount=0;
+  vector<string> outlet=level[level.size()-1];
+  vector<string> tval ={"0","1"};
+  for (auto tnode = gatevalue.begin(); tnode != gatevalue.end(); tnode++) {
+    for(auto val:tval){
+      resetgatevalues(gatevalue,level);
+      cinput(gatevalue,level,cinputs);
+      for(auto iter : inputs){
+        if (iter==(*tnode).first){
+          gatevalue[iter]=dhelper(gatevalue[iter],val);
+        }
+      }
+      gateoutfull(level,gatevalue,mapofgate,(*tnode).first,val);
+      bool good=false;
+      for(auto nod: outlet){
+        if (gatevalue[nod]=="D"||gatevalue[nod]=="D'"){
+        totalcount++;
+        detectcount++;
+        break;
+        }
+        else{
+          totalcount++;
+        }
+      }
+    }
+  }
+  cout<<"======\ntotal # of faults tested: "<<totalcount<<"\n# of detected faults: "<<detectcount<<"\nperecentage of faults detected: "<<(float)detectcount/float(totalcount);
 }
 int main() {
   // Only used for the file reading
@@ -686,6 +717,10 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   if(!good){
     cout<<"cant be tested";
   }
+  cout<<"\n=============\nGive Test vector for full fault list check\n";
+  string tv;
+  cin>>tv;
+  testcircuit(levelization,gatevalue,gateMap,inputs,tv);
   // vector<string> *output= --levelization.end();
   // for(auto a: vector<string> *output){
   //   cout<<a;

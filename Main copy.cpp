@@ -168,16 +168,16 @@ void printfaults(map<int, vector<string>> temp) {
   for (auto a = temp.begin(); a != temp.end(); a++) {
     // cout<<(*a).first<<temp.size()-1;
     if((*a).first==0){//first col
-      cout << endl << "\nFaults at inputs: " <<endl;
+      cout << endl << "\nFaults possible at inputs: " <<endl;
       placeholder="Input";
     }
     else if((*a).first==(temp.size()-1)){//last col
-      cout << endl << "\nFaults at outputs: " <<endl;
+      cout << endl << "\nFaults possible at outputs: " <<endl;
       placeholder="Output";
     }
     else{
       if(first){
-      cout<<endl<< "\nfaults at internal nodes:"<<endl;       
+      cout<<endl<< "\nfaults possible at internal nodes:"<<endl;       
       first=false;
       placeholder="Internal node";
       }
@@ -191,6 +191,7 @@ void printfaults(map<int, vector<string>> temp) {
   
 }
 string dhelper(string gval, string bval){
+  // cout<<"i am here"<<gval<<bval;
   if (gval==bval){
     return gval;
   }
@@ -261,7 +262,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
           return;
         }
         else if (temp[inputs[i]] == "D"){
@@ -316,7 +317,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
       break;
     
     case 2:
@@ -337,7 +338,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
           return;
         }
         if(temp[inputs[i]]=="0"){
@@ -393,7 +394,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
       break;
 
     case 3:
@@ -417,7 +418,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
       break;
 
     case 4:
@@ -457,7 +458,7 @@ void gateOutcome (string gateName, map<string,string> &temp, vector<string> gate
         }
         cout<<names<<" ,";
       }
-      cout<<") = "<<temp[gateName]<<endl;
+      cout<<") = ";
       break;
   }
 
@@ -478,6 +479,7 @@ void gateoutfull(map<int, vector<string>> temp,map<string,string> &temps, map<st
       if(inputLevel[j]==node){
         temps[inputLevel[j]]=dhelper(temps[inputLevel[j]],vall);
       }
+      cout<<temps[inputLevel[j]]<<endl;
     }
     // cout << endl;
   }
@@ -527,6 +529,36 @@ void cinput(map<string,string> &val,map<int,vector<string>> &leveliz, string inp
       }
     }
   }
+}
+void testcircuit(map<int,vector<string>> level,map<string,string>gatevalue,map<string,vector<string>> mapofgate, vector<string> inputs, string cinputs){
+  int totalcount=0;
+  int detectcount=0;
+  vector<string> outlet=level[level.size()-1];
+  vector<string> tval ={"0","1"};
+  for (auto tnode = gatevalue.begin(); tnode != gatevalue.end(); tnode++) {
+    for(auto val:tval){
+      resetgatevalues(gatevalue,level);
+      cinput(gatevalue,level,cinputs);
+      for(auto iter : inputs){
+        if (iter==(*tnode).first){
+          gatevalue[iter]=dhelper(gatevalue[iter],val);
+        }
+      }
+      gateoutfull(level,gatevalue,mapofgate,(*tnode).first,val);
+      bool good=false;
+      for(auto nod: outlet){
+        if (gatevalue[nod]=="D"||gatevalue[nod]=="D'"){
+        totalcount++;
+        detectcount++;
+        break;
+        }
+        else{
+          totalcount++;
+        }
+      }
+    }
+  }
+  cout<<"======\ntotal # of faults tested: "<<totalcount<<"\n# of detected faults: "<<detectcount<<"\nperecentage of faults detected: "<<(float)detectcount/float(totalcount);
 }
 int main() {
   // Only used for the file reading
@@ -652,17 +684,19 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   }
   resetgatevalues(gatevalue,levelization);
   string inp;
-  cout<<"what custom Test vector do you want to test?\nProvide in the form ";
+  cout<<"\n=============\nwhat custom Test vector do you want to test?\nProvide in the form ";
   for(int i=0;i<inputs.size();i++){
     cout<<"X";
   }
-  cout<<endl;
+  cout<<":"<<endl;
   cin>>inp;
   cinput(gatevalue,levelization,inp);
   // gateoutfull(levelization,gatevalue,gateMap);
   cout<<"what fault do you want to test?\n Provide in form:{nodename} {value stuck at}\n";
-  string badnode,vall;
-  cin>>badnode,vall;
+  string badnode;
+  string vall;
+  cin>>badnode>>vall;
+  // cout<<"badnode:"<<badnode<<"\nvall:"<<vall;
   for(auto iter: inputs){
     if (iter==badnode){
       gatevalue[iter]=dhelper(gatevalue[iter],vall);
@@ -675,15 +709,19 @@ for (auto a = levelization.begin(); a != levelization.end(); a++) {
   vector<string> outlet=levelization[levelization.size()-1];
   bool good=false;
   for(auto nod: outlet){
-    cout<<nod;
+    // cout<<nod;
     if (gatevalue[nod]=="D"||gatevalue[nod]=="D'"){
-      cout<<"it can test it";
+      cout<<"it can be tested, b/c D/D' propgates to the output node "<<nod;
       good=true;
     }
   }
   if(!good){
     cout<<"cant be tested";
   }
+  cout<<"\n=============\nGive Test vector for full fault list check\n";
+  string tv;
+  cin>>tv;
+  testcircuit(levelization,gatevalue,gateMap,inputs,tv);
   // vector<string> *output= --levelization.end();
   // for(auto a: vector<string> *output){
   //   cout<<a;
